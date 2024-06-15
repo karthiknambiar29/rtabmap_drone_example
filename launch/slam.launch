@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-   
     <arg name="localization" default="false"/>
     <arg name="rtabmap_viz"   default="true"/>
     <arg name="ground_truth" default="false"/>
@@ -8,11 +7,11 @@
     <arg     if="$(arg localization)" name="pre_args" default=""/>
     <arg unless="$(arg localization)" name="pre_args" default="-d"/>
    
-    <node pkg="nodelet" type="nodelet" name="imu_to_tf" args="standalone rtabmap_util/imu_to_tf">
-      <remap from="imu/data" to="/mavros/imu/data"/>
-      <param name="fixed_frame_id" value="base_link_stabilized"/>
-      <param name="base_frame_id" value="base_link"/>
-    </node>
+    <!-- <node pkg="nodelet" type="nodelet" name="imu_to_tf" args="standalone rtabmap_util/imu_to_tf">
+      <remap from="imu/data" to="/rtabmap/imu"/>
+      <param name="fixed_frame_id" value="camera_imu_optical_frame"/>
+      <param name="base_frame_id" value="camera_link"/>
+    </node> -->
 
     <!-- To connect rtabmap planning stuff with move_base below -->
     <param name="/rtabmap/rtabmap/use_action_for_goal" value="true"/>
@@ -22,24 +21,25 @@
     <param name="/rtabmap/rtabmap/latch" value="false"/> <!-- For some reason, if we latch grid_map, the global costmap inflation layer will create holes on robot path. To avoid holes, republish grid_map on each update (latching disabled). -->
     <include file="$(find rtabmap_launch)/launch/rtabmap.launch">
       <arg name="localization"      value="$(arg localization)"/>
-      <arg name="args"              value="$(arg pre_args) --Optimizer/GravitySigma 0.1 --Vis/FeatureType 10 --Kp/DetectorStrategy 10 --Grid/MapFrameProjection true --NormalsSegmentation false --Grid/MaxGroundHeight 1 --Grid/MaxObstacleHeight 1.6 --RGBD/StartAtOrigin true" />
+      <arg name="args"              value="$(arg pre_args) --Optimizer/GravitySigma 0.1 --Vis/FeatureType 10 --Kp/DetectorStrategy 10 --Grid/MapFrameProjection true --NormalsSegmentation false --Grid/MaxGroundHeight 0.1 --Grid/MaxObstacleHeight 1.6 --RGBD/StartAtOrigin true" />
       <arg name="rtabmap_viz"        value="$(arg rtabmap_viz)" />
       <arg name="frame_id"          value="base_link" />
-      <arg name="odom_guess_frame_id" value="base_link_stabilized" />
-      <arg name="rgb_topic"         value="/r200/camera/color/image_raw" />
-      <arg name="depth_topic"       value="/r200/camera/depth/image_raw" />
-      <arg name="camera_info_topic" value="/r200/camera/color/camera_info" />
-      <arg name="imu_topic"         value="/mavros/imu/data"/>
+      <arg name="odom_guess_frame_id" value="base_link" />
+      <arg name="rgb_topic"         value="/camera/color/image_raw" />
+      <arg name="depth_topic"       value="/camera/aligned_depth_to_color/image_raw" />
+      <arg name="camera_info_topic" value="/camera/color/camera_info" />
+      <arg name="imu_topic"         value="/rtabmap/imu"/>
       <arg name="wait_imu_to_init"  value="true"/>
       <arg name="approx_sync"       value="true"/>
+      <arg name="approx_sync_max_interval" value="0.02" />
       <arg if="$(arg ground_truth)" name="ground_truth_frame_id" value="world"/>
-      <arg if="$(arg ground_truth)" name="ground_truth_base_frame_id" value="base_link_gt"/>
+      <arg if="$(arg ground_truth)" name="ground_truth_base_frame_id" value="camera_link_gt"/>
     </include>
-    
+    <!-- <param name="robot_description" command="cat '$(find rtabmap_drone_example)/urdf/Rover Chasis assembly (with wheels).urdf'" /> -->
     <!-- Costmap -->
     <node pkg="nodelet" type="nodelet" name="camera_points_xyz" args="standalone rtabmap_util/point_cloud_xyz">
-      <remap from="depth/image"       to="/r200/camera/depth/image_raw"/>
-      <remap from="depth/camera_info" to="/r200/camera/depth/camera_info"/>
+      <remap from="depth/image"       to="/camera/aligned_depth_to_color/image_raw"/>
+      <remap from="depth/camera_info" to="/camera/aligned_depth_to_color/camera_info"/>
       <remap from="cloud"             to="camera_cloud" />
 
       <param name="decimation"  type="double" value="4"/>
@@ -52,6 +52,7 @@
        <remap from="map" to="/rtabmap/grid_map"/>
        <remap from="odom" to="/rtabmap/odom"/>
        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />  
+       <!-- <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS"/> -->
        <rosparam file="$(find rtabmap_drone_example)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
        <rosparam file="$(find rtabmap_drone_example)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
        <rosparam file="$(find rtabmap_drone_example)/param/global_costmap_params.yaml" command="load" />
@@ -63,20 +64,12 @@
    </node>
    <node name="marked_voxels_markers" pkg="rtabmap_costmap_plugins" type="voxel_markers" args="voxel_grid:=/move_base/local_costmap/voxel_layer/voxel_grid visualization_marker:=/voxels_marked" />
 
-    <!-- joystick -->
-    <rosparam file="$(find rtabmap_drone_example)/config/joy_config.yaml" />
-    <node pkg="joy" type="joy_node" name="joy_node">
-        <param name="autorepeat_rate" value="5"/>
-    </node>
-    <node pkg="teleop_twist_joy" type="teleop_node" name="teleop_node" output="screen">
-        <param name="autorepeat_rate" value="5"/>
-    </node>
-
     <!-- Ground truth -->
-  <node if="$(arg ground_truth)" pkg="tf" type="static_transform_publisher" name="worldtomap_broadcaster" args="0 0 0 0 0 0 1 world map 100" />
-  <node if="$(arg ground_truth)" pkg="rtabmap_util" type="gazebo_ground_truth.py" name="gazebo_ground_truth" output="screen">
-    <param name="frame_id"        value="world"/>
-    <param name="child_frame_id"  value="base_link_gt"/>
-    <param name="gazebo_frame_id" value="drone::base_link"/>
-  </node>
+    <node  pkg="tf" type="static_transform_publisher" name="worldtomap_broadcaster" args="0.2 0 0 0 0 0  base_link camera_link 100" />
+    <!-- <node  pkg="tf" type="static_transform_publisher" name="worldto_broadcaster" args="0 0 0.2 0 0 0  odom base_link 100" /> -->
+    <node  pkg="tf" type="static_transform_publisher" name="worldto2_broadcaster" args="0 0 1.5 -1.5708 0 0  map base_link 100" />
+    <!-- <node  pkg="tf" type="static_transform_publisher" name="worldto3_broadcaster" args="0 0 0.2 0 0 0  map base_link 100" /> -->
+    <!-- <node  pkg="tf" type="static_transform_publisher" name="worldto4_broadcaster" args="0 0 0.2 0 0 0  map base_link 100" /> -->
+    <!-- <node pkg="rtabmap_drone_example" type="cmd_vel.py" name="cmd_vel" /> -->
+
 </launch>

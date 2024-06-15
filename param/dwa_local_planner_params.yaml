@@ -1,0 +1,45 @@
+DWAPlannerROS:
+  # Robot configuration parameters
+  max_vel_x: 1          # Maximum forward velocity (m/s)
+  min_vel_x: 0.0           # Minimum forward velocity (m/s)
+  max_vel_y: 0.0           # Maximum lateral velocity (m/s) (for differential robots this is 0)
+  min_vel_y: 0.0           # Minimum lateral velocity (m/s) (for differential robots this is 0)
+  max_trans_vel: 1       # Maximum translational velocity (m/s)
+  min_trans_vel: 0.1       # Minimum translational velocity (m/s)
+  max_rot_vel: 1.0         # Maximum rotational velocity (rad/s)
+  min_rot_vel: 0.4         # Minimum rotational velocity (rad/s)
+  acc_lim_x: 1.0           # Maximum forward acceleration (m/s^2)
+  acc_lim_y: 0.0           # Maximum lateral acceleration (m/s^2) (for differential robots this is 0)
+  acc_lim_theta: 1.0       # Maximum rotational acceleration (rad/s^2)
+
+  # Goal tolerance parameters
+  yaw_goal_tolerance: 0.2  # Tolerance in radians for the goal yaw
+  xy_goal_tolerance: 0.2   # Tolerance in meters for the goal position
+  latch_xy_goal_tolerance: true # Latch the goal tolerance to prevent oscillations near the goal
+
+  # Forward simulation parameters
+  sim_time: 0.8            # Time to simulate trajectories (seconds)
+  vx_samples: 15           # Number of samples for velocity in x direction
+  vy_samples: 1            # Number of samples for velocity in y direction
+  vtheta_samples: 30       # Number of samples for velocity in theta direction (rotation)
+
+  # Trajectory scoring parameters
+  path_distance_bias: 32.0     # Weight for the path distance part of the cost function
+  goal_distance_bias: 24.0     # Weight for the goal distance part of the cost function
+  occdist_scale: 0.01          # Weight for the obstacle distance part of the cost function
+  forward_point_distance: 0.325 # Distance from robot center to a point in front of the robot along the path
+
+  # Oscillation prevention parameters
+  oscillation_reset_dist: 0.1  # Distance to reset oscillation (increased to prevent frequent resets)
+
+  # Robot geometry parameters
+  heading_lookahead: 0.325     # How far to look ahead in the trajectory (meters)
+  holonomic_robot: false       # Whether the robot is holonomic (can move in any direction)
+
+  # Global plan parameters
+  prune_plan: true             # Whether to prune the plan as the robot moves along
+
+  # Debug parameters
+  publish_cost_grid_pc: false  # Whether to publish the cost grid point cloud (for debugging)
+  publish_traj_pc: false       # Whether to publish the trajectory point cloud (for debugging)
+

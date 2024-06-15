@@ -1,0 +1,50 @@
+<launch>
+  <arg name="use_rviz" default="false" />
+  <arg name="use_rtabmapviz" default="false" />
+  <arg name="localization" default="false"/>
+  <!-- <include file="$(find mavros)/launch/apm.launch">
+    <arg name="log_output" value="log" />
+  </include> -->
+  <!-- Launch the realsense2_camera node -->
+  <!-- <include file="$(find realsense2_camera)/launch/rs_aligned_depth.launch">
+    <arg name="align_depth" value="true" />
+    <arg name="enable_pointcloud" value="true" />
+    <arg name="unite_imu_method" value="linear_interpolation" />
+    <arg name="enable_gyro" value="true" />
+    <arg name="enable_accel" value="true" />    
+  </include> -->
+  <!-- <param name="/rtabmap/rtabmap/use_action_for_goal" value="true"/> -->
+
+  <!-- Launch the imu_filter_madgwick node -->
+  <node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter_node" output="screen">
+    <param name="use_mag" value="false" />
+    <param name="publish_tf" value="false" />
+    <param name="world_frame" value="enu" />
+    <remap from="/imu/data_raw" to="/camera/imu" />
+    <remap from="/imu/data" to="/rtabmap/imu" />
+  </node> 
+  <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+    <arg name="args"               value="--delete_db_on_start"/>
+    <arg name="depth_topic"        value="/camera/aligned_depth_to_color/image_raw"/>
+    <arg name="frame_id"           value="camera_link"/>
+    <arg name="visual_odometry"    value="true"/>
+    <arg name="rgb_topic"          value="/camera/color/image_raw"/>
+    <arg name="camera_info_topic"  value="/camera/color/camera_info"/>
+    <arg name="queue_size"         value="200"/>
+    <arg name="rviz"               value="$(arg use_rviz)"/>
+    <arg name="rtabmapviz"         value="$(arg use_rtabmapviz)"/>
+    <arg name="approx_sync"        value="true"/>
+    <arg name="imu_topic"         value="/rtabmap/imu"/>
+    <arg name="wait_imu_to_init"  value="true"/>
+    <arg name="approx_sync_max_interval" value="0.02" />
+    <!-- <arg name="approx_sync"       value="true"/> -->
+  </include>
+  <!-- <node pkg="rtabmap_drone_example" name="run" type="run.py" output="screen"/> 
+  <node pkg="rtabmap_drone_example" name="cmd_vel" type="cmd_vel.py" output="screen"/> -->
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find rtabmap_drone_example)/localization.rviz" /> 
+
+</launch>

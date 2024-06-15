@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20240530-1207-Experimental"
+	Name="moonlab"
+	Generator="ctest-3.29.2"
+	CompilerName="/usr/lib/ccache/c++"
+	CompilerVersion="9.4.0"
+	OSName="Linux"
+	Hostname="moonlab"
+	OSRelease="5.15.0-107-generic"
+	OSVersion="#117~20.04.1-Ubuntu SMP Tue Apr 30 10:35:57 UTC 2024"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="142"
+	ProcessorCacheSize="8192"
+	NumberOfLogicalCPU="8"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="1952"
+	TotalPhysicalMemory="15819"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="1891.94"
+	>
+	<Testing>
+		<StartDateTime>May 30 18:27 IST</StartDateTime>
+		<StartTestTime>1717073859</StartTestTime>
+		<TestList/>
+		<EndDateTime>May 30 18:27 IST</EndDateTime>
+		<EndTestTime>1717073859</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

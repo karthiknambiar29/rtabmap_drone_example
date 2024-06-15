@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/moon-lab/karthik_ws/src/rtabmap_drone_example/build/devel/setup.sh
